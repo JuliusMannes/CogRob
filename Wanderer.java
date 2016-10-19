@@ -25,13 +25,14 @@ public Wanderer(float a_fTurnDistance, float a_fClearDistance, UltraSonicSensor 
 @Override
 public boolean takeControl() {
 	//Detect objects	
+	return true;/*
 	if (!m_bInControl && (m_pLeftSensor.DetectSample() < m_fClearDistance || m_pRightSensor.DetectSample() < m_fClearDistance)) {
 		//Log
 		System.out.println("Object detected, initializing Turn!");
 		return true;
 	} 
 	//Otherwise
-	return false;
+	return false;*/
 }
 
 @Override
@@ -44,29 +45,51 @@ public void suppress() {
 public void action() {
 	m_bSuppressed = false;
 	m_bInControl = true;
+	//boolean FirstGo = true;
 	
 	//Continue driving until no longer feared or suppressed
-	while( !m_bSuppressed) {
+	while( !m_bSuppressed && m_bInControl) {
+		//Right motor (A)
 		float Left = m_pLeftSensor.DetectSample();
 		float Right = m_pRightSensor.DetectSample();
 		
-		//Turn
-		if(Left < m_fTurnDistance && Right < m_fTurnDistance) {
-			Motor.D.rotateTo(360, true);
-			Motor.A.rotateTo(-360, true);
-			
-			while(Motor.A.isMoving() || Motor.D.isMoving()) {
-				Thread.yield();
-			}
-		} else if (Left < m_fClearDistance){
-			Motor.D.setSpeed(Left * m_fSpeedModifier);
-			Motor.D.backward();
-			Motor.A.stop();
-		} else if (Right < m_fClearDistance){
-			Motor.A.setSpeed(Right * m_fSpeedModifier);
+		//Right
+		if(Right < m_fClearDistance) {
+			Motor.A.setSpeed(Math.max(0.0f,(Right-m_fTurnDistance) * m_fSpeedModifier));
 			Motor.A.backward();
-			Motor.D.stop();
-		} 
+		} else {
+			Motor.A.setSpeed(270);
+			Motor.A.backward();
+		}
+		
+		//Left
+		if(Left < m_fClearDistance) {
+			Motor.D.setSpeed(Math.max(0.0f,(Left-m_fTurnDistance) * m_fSpeedModifier));
+			Motor.D.backward();
+		} else {
+			Motor.D.setSpeed(270);
+			Motor.D.backward();
+		}
+		
+		//Turn around on stuck
+		if (Left < m_fTurnDistance && Right < m_fTurnDistance) {
+			System.out.println("TURNING");
+			
+			Motor.D.setSpeed(270);
+			Motor.D.backward();
+			Motor.A.setSpeed(270);
+			Motor.A.forward();
+			//Motor.A.rotateTo(-360, false);
+			
+			try {
+				Thread.sleep((long) (1.8f * 1000));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		System.out.println("Right:"+Right+" Left:"+Left);
 	 }
 	 
 	 //Clean up

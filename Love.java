@@ -24,14 +24,15 @@ public Love(float a_fFearDistance, float a_fClearDistance, UltraSonicSensor a_pL
 
 @Override
 public boolean takeControl() {
+	return true;
 	//Detect objects	
-	if (!m_bInControl && (m_pLeftSensor.DetectSample() < m_fFearDistance || m_pRightSensor.DetectSample() < m_fFearDistance)) {
+	/*if (!m_bInControl && (m_pLeftSensor.DetectSample() < m_fClearDistance || m_pRightSensor.DetectSample() < m_fClearDistance)) {
 		//Log
 		System.out.println("Object detected, initializing Love!");
 		return true;
 	} 
 	//Otherwise
-	return false;
+	return false;*/
 }
 
 @Override
@@ -43,28 +44,49 @@ public void suppress() {
 @Override
 public void action() {
 	//Fear started
-	boolean DriveLeft = false;
-	boolean DriveRight = false;
+	//boolean DriveLeft = false;
+	//boolean DriveRight = false;
 	m_bSuppressed = false;
 	m_bInControl = true;
-	boolean FirstGo = true;
+	//boolean FirstGo = true;
 	
 	//Continue driving until no longer feared or suppressed
-	while( !m_bSuppressed && (DriveLeft || DriveRight || FirstGo)) {
+	while( !m_bSuppressed && m_bInControl) {
 		//Right motor (A)
 		float Left = m_pLeftSensor.DetectSample();
 		float Right = m_pRightSensor.DetectSample();
-		FirstGo = false;
+		//FirstGo = false;
+		
+		//Right
+		if(Right < m_fClearDistance) {
+			Motor.A.setSpeed(Math.max(0.0f,(Right-m_fFearDistance) * m_fSpeedModifier));
+			Motor.A.backward();
+		} else {
+			Motor.A.setSpeed(270);
+			Motor.A.backward();
+		}
+		
+		//Left
+		if(Left < m_fClearDistance) {
+			Motor.D.setSpeed(Math.max(0.0f,(Left-m_fFearDistance) * m_fSpeedModifier));
+			Motor.D.backward();
+		} else {
+			Motor.D.setSpeed(270);
+			Motor.D.backward();
+		}
+		
+		//Exit loop
+		//m_bInControl = (Left < m_fClearDistance || Right < m_fClearDistance);
 		
 		//Check left side
-		if(!DriveLeft && Left < m_fFearDistance) {
+		/*if(!DriveLeft && Left < m_fFearDistance) {
 			Motor.A.setSpeed(m_fSpeedModifier * Left);
 			Motor.A.backward();
 			DriveLeft = true;
 		} else if (DriveLeft && Left > m_fClearDistance) {
 			Motor.A.stop();
 			DriveLeft = false;
-		} if (DriveLeft) {
+		} else if (DriveLeft) {
 			Motor.A.setSpeed((int) (m_fSpeedModifier * Math.max(0.0f,(Left-0.05f))));
 			Motor.A.backward();
 		}
@@ -77,10 +99,12 @@ public void action() {
 		} else if (DriveRight && Right > m_fClearDistance) {
 			Motor.D.stop();
 			DriveRight = false;
-		}  if (DriveRight) {
-			Motor.D.setSpeed((int) (m_fSpeedModifier * Math.max(0.0f,(Right-0.05f))));
+		} else if (DriveRight) {
+			Motor.D.setSpeed(270);
 			Motor.D.backward();
-		}
+			Motor.A.setSpeed((int) (m_fSpeedModifier * Math.max(0.0f,(Right-0.05f))));
+			Motor.A.backward();
+		}*/
 	 }
 	 
 	 //Clean up

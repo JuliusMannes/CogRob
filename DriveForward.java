@@ -18,8 +18,8 @@ public class DriveForward  implements Behavior {
 	 System.out.println("Starting forward");
 	 
 	 //Set motor speed and direction
-     Motor.A.setSpeed(180);
-	 Motor.D.setSpeed(180);
+     Motor.A.setSpeed(270);
+	 Motor.D.setSpeed(270);
      Motor.A.backward();
      Motor.D.backward();
      
